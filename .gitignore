@@ -1,0 +1,9 @@
+# Removing the PyCache Directory from the Host
+__pycache__
+
+# Removing testing secrets for development
+unlockrs/tokens.py
+.envrc
+
+# Removing files that are not ready to be commited
+requirements.txt
