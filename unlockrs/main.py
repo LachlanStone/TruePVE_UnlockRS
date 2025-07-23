@@ -1,31 +1,33 @@
 import sys
 import os
+import asyncio
 
 # Add the project root directory to the Python path to resolve the module.
 # This makes the script runnable directly.
 _PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if _PROJECT_ROOT not in sys.path:
     sys.path.insert(0, _PROJECT_ROOT)
-from unlockrs.pve.start import *
-from unlockrs.pve.status import *
 from unlockrs.config import *
 from unlockrs.tokens import *
+from unlockrs.pve.start import *
+from unlockrs.pve.status import *
+from unlockrs.TrueNas.unlock import *
 
-def main():
-    TrueNas_Boot()
+
+async def main():
+    await TrueNas_Boot()
     #TODO Impliment the TrueNAS Components for unlocking the system
-    TrueNas_Unlock()
+    await TrueNas_Unlock()
     exit()
 
-def TrueNas_Boot():
-
+async def TrueNas_Boot():
     global status
     global check
     if 'status' not in globals():
-        status = pve_vmstatus(PVE_Endpoint, PVE_Port, PVE_Node, TrueNas_VMID, TruePVE_Token)
+        status = pve_vmstatus(PVE_Endpoint, PVE_Port, PVE_Node, TrueNas_VMID, TrueNas_Token)
 # Debugging Component to Force, if bellow
         # status = "stopped"
-        TrueNas_Boot()
+        await TrueNas_Boot()
     elif status == "running" and 'check' not in globals():
         print("TrueNas Virtual Machine is already Running")
         return()
@@ -34,13 +36,13 @@ def TrueNas_Boot():
         return()
     elif status == "stopped" and 'check' not in globals():
         print("Virtaul Machine is Stopped")
-        check = pve_vmpost(PVE_Endpoint, PVE_Port, PVE_Node, TrueNas_VMID, "start", TruePVE_Token)
+        check = pve_vmpost(PVE_Endpoint, PVE_Port, PVE_Node, TrueNas_VMID, "start", TrueNas_Token)
 # Debugging Component to Force, if bellow
         # status = "stopped"
-        TrueNas_Boot()
+        await TrueNas_Boot()
     elif status == "stopped" and check == "start":
         for i in range(5):
-            status = pve_vmstatus(PVE_Endpoint, PVE_Port, PVE_Node, TrueNas_VMID, TruePVE_Token)
+            status = pve_vmstatus(PVE_Endpoint, PVE_Port, PVE_Node, TrueNas_VMID, TrueNas_Token)
             if status == "running":
                 print("TrueNas Virtual Machine has Booted")
                 print(f"after {i} amount of checks")
@@ -50,9 +52,10 @@ def TrueNas_Boot():
     else:
         print("ERROR: Unknown Status")
         exit()
-def TrueNas_Unlock():
+async def TrueNas_Unlock():
     print("DEBUG: TrueNAS Unlock Starts Here")
+    await connect_to_websocket(TrueNas_IP, TrueNas_Username, TrueNas_Password)
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
