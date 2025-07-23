@@ -12,21 +12,21 @@ def pve_vmstatus(Endpoint, Port, Node, vmid, token):
 # Set the URL Paramater for the Status of the VM
     url = "https://" + Endpoint + ":" + Port + "/api2/json/nodes/" + Node + "/qemu/" + vmid + "/status/current"
 # Set the Token for the Authorization Header within the system
-    params = {
+    headers = {
         "Authorization": f"PVEAPIToken={token}"
     }
     # Disable Certifificate Verifivation
     # r = requests.get(url, verify=False)
-    r= requests.get(url, verify=False, headers=params)
+    r= requests.get(url, verify=False, headers=headers)
     if r.status_code != 200:
         print("Error, with the API got Status Code:", r.status_code)
         print(r.reason)
         exit()
     elif r.status_code == 200:
         json_data = json.loads(r.text)
-        # print(json_data["data"]["status"])
         status = json_data["data"]["status"]
-        return status 
+        print(status)
+        return status
     else:
         print("Fatel Error")
         exit()

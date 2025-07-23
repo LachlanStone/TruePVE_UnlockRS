@@ -1,7 +1,6 @@
 import sys
 import os
 
-
 # Add the project root directory to the Python path to resolve the module.
 # This makes the script runnable directly.
 _PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -15,25 +14,44 @@ from unlockrs.tokens import *
 def main():
     TrueNas_Boot()
     #TODO Impliment the TrueNAS Components for unlocking the system
+    TrueNas_Unlock()
     exit()
 
-
 def TrueNas_Boot():
-    status = pve_vmstatus(PVE_Endpoint, PVE_Port, PVE_Node, TrueNas_VMID, TruePVE_Token)
-    if status == "running":
-        print("System Running")
-    elif status == "stopped":
-        print("System Stopped")
-        pve_vmpost(PVE_Endpoint, PVE_Port, PVE_Node, TrueNas_VMID, "start", TruePVE_Token)
-        if loop_protect == False:
-            loop_protect = True
-            TrueNas_Boot()
-        if loop_protect == True:
-            exit()
+
+    global status
+    global check
+    if 'status' not in globals():
+        status = pve_vmstatus(PVE_Endpoint, PVE_Port, PVE_Node, TrueNas_VMID, TruePVE_Token)
+# Debugging Component to Force, if bellow
+        # status = "stopped"
+        TrueNas_Boot()
+    elif status == "running" and 'check' not in globals():
+        print("TrueNas Virtual Machine is already Running")
+        return()
+    elif status == "running" and check == "start":
+        print("TrueNas Virtual Machine has Booted")
+        return()
+    elif status == "stopped" and 'check' not in globals():
+        print("Virtaul Machine is Stopped")
+        check = pve_vmpost(PVE_Endpoint, PVE_Port, PVE_Node, TrueNas_VMID, "start", TruePVE_Token)
+# Debugging Component to Force, if bellow
+        # status = "stopped"
+        TrueNas_Boot()
+    elif status == "stopped" and check == "start":
+        for i in range(5):
+            status = pve_vmstatus(PVE_Endpoint, PVE_Port, PVE_Node, TrueNas_VMID, TruePVE_Token)
+            if status == "running":
+                print("TrueNas Virtual Machine has Booted")
+                print(f"after {i} amount of checks")
+            else:
+                print("System Failed to Boot")
+                print("CHECK PVE SERVER")
     else:
         print("ERROR: Unknown Status")
         exit()
-
+def TrueNas_Unlock():
+    print("DEBUG: TrueNAS Unlock Starts Here")
 
 
 if __name__ == "__main__":
