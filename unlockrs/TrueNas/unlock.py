@@ -91,7 +91,7 @@ async def unlock_dataset(endpoint, dataset, passphrase, force=False, username=nd
             # Fail Forward - As the DataSet is allready unlocked
             if error_message == f"{dataset} dataset is not locked":
                 print(
-                    f"Polling Job ID: {job_id}, DatatSet: {dataset}, Status: Storage already unlocked"
+                    f"Polling Job ID: {job_id}, DatatSet: {dataset} is allready unlocked"
                 )
                 await ws.close()
                 return "Success"
@@ -102,6 +102,6 @@ async def unlock_dataset(endpoint, dataset, passphrase, force=False, username=nd
                 exit()
         # DataSet was unlocked and is healthy
         elif job_state == "success":
-            print(f"Polling Job ID: {job_id}, DatatSet: {dataset}, Status Storage unlocked")
+            print(f"Polling Job ID: {job_id}, DatatSet: {dataset} is unlocked")
             await ws.close()
             return "Success"
