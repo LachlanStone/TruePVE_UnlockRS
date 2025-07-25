@@ -26,7 +26,11 @@ async def TrueNas_Boot():
     global check
     if "status" not in globals():
         status = pve_vmstatus(
-            PVE_Endpoint, PVE_Port, PVE_Node, TrueNas_VMID, TrueNas_Token
+            Endpoint=PVE_Endpoint,
+            Port=PVE_Port,
+            Node=PVE_Node,
+            vmid=TrueNas_VMID,
+            token=TrueNas_Token,
         )
         # Debugging Component to Force, if bellow
         # status = "stopped"
@@ -40,7 +44,12 @@ async def TrueNas_Boot():
     elif status == "stopped" and "check" not in globals():
         print("Virtaul Machine is Stopped")
         check = pve_vmpost(
-            PVE_Endpoint, PVE_Port, PVE_Node, TrueNas_VMID, "start", TrueNas_Token
+            Endpoint=PVE_Endpoint,
+            Port=PVE_Port,
+            Node=PVE_Node,
+            vmid=TrueNas_VMID,
+            api_command="start",
+            token=TrueNas_Token,
         )
         # Debugging Component to Force, if bellow
         # status = "stopped"
@@ -48,7 +57,11 @@ async def TrueNas_Boot():
     elif status == "stopped" and check == "start":
         for i in range(5):
             status = pve_vmstatus(
-                PVE_Endpoint, PVE_Port, PVE_Node, TrueNas_VMID, TrueNas_Token
+                Endpoint=PVE_Endpoint,
+                Port=PVE_Port,
+                Node=PVE_Node,
+                vmid=TrueNas_VMID,
+                token=TrueNas_Token,
             )
             if status == "running":
                 print("TrueNas Virtual Machine has Booted")
