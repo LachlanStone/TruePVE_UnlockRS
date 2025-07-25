@@ -11,16 +11,31 @@ from unlockrs.config import *
 from unlockrs.tokens import *
 from unlockrs.pve.start import *
 from unlockrs.pve.status import *
+from unlockrs.systemcheck import *
 from unlockrs.TrueNas.unlock import *
 
 
+#TODO: Encryption / Read USB Key
+# The usb key will store the file that contains the encryption key
+
+#TODO: Config File
+# Need to define the variables
+
+
+#TODO: Virtual Machine Booting
+# Impliment Array to store all the Settings and Virtual Machines booted after
+# Impliment Looping Startup of Virtual Machines with checking of VM State
+
 async def main():
+    await SystemCheck()
     await TrueNas_Boot()
-    # TODO Impliment the TrueNAS Components for unlocking the system
     await TrueNas_Unlock()
+    await VMBoot()
     exit()
 
-
+async def SystemCheck():
+    status = await port_check(endpoint=PVE_Endpoint, port=8006)
+    assert status == "online"
 async def TrueNas_Boot():
     global status
     global check
@@ -72,17 +87,17 @@ async def TrueNas_Boot():
     else:
         print("ERROR: Unknown Status")
         exit()
-
-
 async def TrueNas_Unlock():
-    print("DEBUG: TrueNAS Unlock Starts Here")
     await unlock_dataset(
-        endpoint=TrueNas_IP,
+        endpoint=TrueNas_Endpoint,
         dataset=TrueNas_dataset,
-        passphrase=TrueNas_passphrase,
         username=TrueNas_Username,
+        passphrase=TrueNas_passphrase,
         password=TrueNas_Password,
     )
+
+async def VMBoot(): # STATUS: TODO
+    print("DEBUG: VM Boot Starts Here")
 
 
 if __name__ == "__main__":

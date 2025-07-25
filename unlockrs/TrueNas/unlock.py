@@ -6,7 +6,9 @@ nd = "NotDefined"
 token = "NotDefined"  # This is temp until i define it in code under the def later
 
 
-async def unlock_dataset(endpoint, dataset, passphrase, force=False, username=nd, password=nd):
+async def unlock_dataset(
+    endpoint, dataset, passphrase, force=False, username=nd, password=nd
+):
     # Define what variables need to be configured for the appliaction to funtion
     # TODO: Implement actual websocket connection and authentication
     print(f"Attempting to connect to TrueNAS at ws://{endpoint}/websocket")
@@ -15,7 +17,6 @@ async def unlock_dataset(endpoint, dataset, passphrase, force=False, username=nd
         # Connect to the WebSocket
         await ws.send(json.dumps({"msg": "connect", "version": "1", "support": ["1"]}))
         await ws.recv()
-        # print(await ws.recv())
 
         # Confirm method for authentication with the websocket API
         if username != nd and password != nd:
@@ -31,7 +32,6 @@ async def unlock_dataset(endpoint, dataset, passphrase, force=False, username=nd
                 )
             )
             await ws.recv()
-            # print(await ws.recv())
         elif token != nd:
             print("Token Connection is not setup yet")
             exit()
@@ -65,24 +65,39 @@ async def unlock_dataset(endpoint, dataset, passphrase, force=False, username=nd
         )
         await ws.send(args)
         id = json.loads(await ws.recv())["result"]
-
         # TODO Get the state from above as result with ID then call the jobs queue on truenas and get the state of the job after save 10 second
         # Get the state of the dataset after we unlock it
-        args = json.dumps(
-            {
-                "msg": "method",
-                "id": "4",
-                "method": "core.get_jobs",
-                "params": [[["id", "=", id]]],
-            }
-        )
-        await ws.send(args)
-        response = json.loads(await ws.recv())
-        # Safely access job details to avoid errors if the job succeeds
-        # Extract the Response Infomation from the result
-        job = response.get("result", [{}])[0]
-        job_id = job.get("id")
-        job_state = job.get("state")
+        ## If the unlock is still running then check again every i + time
+        for i in range(10):
+            args = json.dumps(
+                {
+                    "msg": "method",
+                    "id": "4",
+                    "method": "core.get_jobs",
+                    "params": [[["id", "=", id]]],
+                }
+            )
+            await ws.send(args)
+            response = json.loads(await ws.recv())
+            # Safely access job details to avoid errors if the job succeeds
+            # Extract the Response Infomation from the result
+            job = response.get("result", [{}])[0]
+            job_id = job.get("id")
+            job_state = job.get("state")
+            # Check if the Unlock is still running
+            if job_state == "RUNNING" or job_state == "nd":
+                sleepy = i + 1
+                sleep(sleepy)
+            elif job_state == "SUCCESS" or job_state == "FAILED":
+                break
+            elif i == 9:
+                print("Fatel Error")
+                await(ws.close)
+            else:
+                print("Fatel Error")
+                print(job_state)
+                await(ws.close)
+
         # Check the Status of the Dataset
         # Fail Forward as the response, can be the data is allready unlocked
         if job_state == "FAILED" and job.get("exc_info"):
@@ -91,7 +106,7 @@ async def unlock_dataset(endpoint, dataset, passphrase, force=False, username=nd
             # Fail Forward - As the DataSet is allready unlocked
             if error_message == f"{dataset} dataset is not locked":
                 print(
-                    f"Polling Job ID: {job_id}, DatatSet: {dataset} is allready unlocked"
+                    f"Polling Job ID: {job_id}, DatatSet: {dataset}, Status: Storage already unlocked"
                 )
                 await ws.close()
                 return "Success"
@@ -101,7 +116,9 @@ async def unlock_dataset(endpoint, dataset, passphrase, force=False, username=nd
                 await ws.close()
                 exit()
         # DataSet was unlocked and is healthy
-        elif job_state == "success":
-            print(f"Polling Job ID: {job_id}, DatatSet: {dataset} is unlocked")
+        elif job_state == "RUNNING" or job_state == "SUCCESS":
+            print(
+                f"Polling Job ID: {job_id}, DatatSet: {dataset}, Status Storage unlocked"
+            )
             await ws.close()
             return "Success"
