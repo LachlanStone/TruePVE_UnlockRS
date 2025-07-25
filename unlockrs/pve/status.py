@@ -1,7 +1,13 @@
 import requests
 import urllib3
 import json
+
+debug = False
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+# TODO Looking to migrate the pve_vmapi and pve_vmstatus to a seperate module
+# TODO Setup a loop funtion for pve scanning of the component
+
 
 def pve_vmstatus(Endpoint, Port, Node, vmid, token):
     # Set the URL Paramater for the Status of the VM

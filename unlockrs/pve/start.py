@@ -1,5 +1,7 @@
 import requests
 import urllib3
+from unlockrs.main import TrueNas_VMID
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
