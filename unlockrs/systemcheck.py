@@ -1,6 +1,4 @@
 import socket
-import asyncio
-import ipaddress
 
 async def port_check(endpoint="none", port="none"):
     assert endpoint != "none"
