@@ -1,0 +1,33 @@
+TrueNas:
+  Endpoint:  
+  vmid: 
+  DataSet:
+    Name: 
+    PassPhrase: 
+    FilePath:
+  Auth:
+    Username: 
+    Password: 
+    API_Token:
+
+PVE:
+  Endpoint: 
+  Port: 
+  Node: 
+  Token: 
+
+VMBootLoop:
+  BootGroup1:
+    StartDelay:
+    GroupStart:
+    VirtualMachines:
+      - VM1
+      - VM2
+      - VM3
+  BootGroup2:
+    StartDelay:
+    GroupStart:
+    VirtualMachines:
+      - VM1
+      - VM2
+      - VM3
