@@ -116,6 +116,7 @@ async def TrueNas_Boot():
         print("ERROR: Unknown Status")
         exit()
 
+
 async def TrueNas_Unlock():
     await unlock_dataset(
         endpoint=TrueNas_Endpoint,
@@ -127,7 +128,21 @@ async def TrueNas_Unlock():
 
 
 async def VMBoot():  # STATUS: TODO
-    print("DEBUG: VM Boot Starts Here")
+    VB = "VMBootLoop"
+    for group in load[VB]:
+        for VirtualMachines in load[VB][group]["VirtualMachines"]:
+            StartDelay = load[VB][group]["StartDelay"]
+            GroupStart = load[VB][group]["GroupStart"]
+            VirtualMachines = load[VB][group]["VirtualMachines"]
+            for vm in VirtualMachines:
+                # Convert this to multi Procesing for the GroupStart
+                print(GroupStart)
+                # Make this the VM Start funtion
+                print(vm)
+                # Nested For loop for the status
+                print(vm)
+                if isinstance(StartDelay, int):
+                    time.sleep(StartDelay)
 
 
 if __name__ == "__main__":
