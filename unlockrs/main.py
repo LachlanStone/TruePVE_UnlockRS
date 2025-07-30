@@ -22,7 +22,6 @@ from unlockrs.TrueNas.unlock import *
 # TODO: Config File
 # Need to define the variables
 
-
 # TODO: Virtual Machine Booting
 # Impliment Array to store all the Settings and Virtual Machines booted after
 # Impliment Looping Startup of Virtual Machines with checking of VM State
@@ -32,8 +31,8 @@ async def main():
     await SetupConfig()
     await SystemCheck()
     await TrueNas_Boot()
-    await TrueNas_Unlock()
-    await VMBoot()
+    unlock = await TrueNas_Unlock()
+    await VMBoot(unlock)
     exit()
 
 
@@ -60,15 +59,15 @@ async def SetupConfig():
 
 
 async def SystemCheck():
-    status = await port_check(endpoint=PVE_Endpoint, port=PVE_Port)
-    assert status == "online"
+    tstatus = await port_check(endpoint=PVE_Endpoint, port=PVE_Port)
+    assert tstatus == "online"
 
 
 async def TrueNas_Boot():
-    global status
+    global tstatus
     global check
-    if "status" not in globals():
-        status = pve_vmstatus(
+    if "tstatus" not in globals():
+        tstatus = pve_vmstatus(
             Endpoint=PVE_Endpoint,
             Port=PVE_Port,
             Node=PVE_Node,
@@ -76,15 +75,15 @@ async def TrueNas_Boot():
             token=PVE_Token,
         )
         # Debugging Component to Force, if bellow
-        # status = "stopped"
+        # tstatus = "stopped"
         await TrueNas_Boot()
-    elif status == "running" and "check" not in globals():
+    elif tstatus == "running" and "check" not in globals():
         print("TrueNas Virtual Machine is already Running")
         return ()
-    elif status == "running" and check == "start":
+    elif tstatus == "running" and check == "start":
         print("TrueNas Virtual Machine has Booted")
         return ()
-    elif status == "stopped" and "check" not in globals():
+    elif tstatus == "stopped" and "check" not in globals():
         print("Virtaul Machine is Stopped")
         check = pve_vmpost(
             Endpoint=PVE_Endpoint,
@@ -95,18 +94,18 @@ async def TrueNas_Boot():
             token=PVE_Token,
         )
         # Debugging Component to Force, if bellow
-        # status = "stopped"
+        # tstatus = "stopped"
         await TrueNas_Boot()
-    elif status == "stopped" and check == "start":
+    elif tstatus == "stopped" and check == "start":
         for i in range(5):
-            status = pve_vmstatus(
+            tstatus = pve_vmstatus(
                 Endpoint=PVE_Endpoint,
                 Port=PVE_Port,
                 Node=PVE_Node,
                 vmid=TrueNas_VMID,
                 token=PVE_Token,
             )
-            if status == "running":
+            if tstatus == "running":
                 print("TrueNas Virtual Machine has Booted")
                 print(f"after {i} amount of checks")
             else:
@@ -118,31 +117,65 @@ async def TrueNas_Boot():
 
 
 async def TrueNas_Unlock():
-    await unlock_dataset(
+    unlock = await unlock_dataset(
         endpoint=TrueNas_Endpoint,
         username=TrueNas_Username,
         password=TrueNas_Password,
         dataset=TrueNas_dataset,
         passphrase=TrueNas_passphrase,
     )
+    return unlock
 
 
-async def VMBoot():  # STATUS: TODO
+async def VMBoot(unlock):  # STATUS: TODO
     VB = "VMBootLoop"
     for group in load[VB]:
-        for VirtualMachines in load[VB][group]["VirtualMachines"]:
-            StartDelay = load[VB][group]["StartDelay"]
+    # Check if Variables exists and if they do not set the default value
+        if "Reboot" in load[VB][group]:
+            Reboot = bool(load[VB][group]["Reboot"])
+        else:
+            Reboot = False
+        assert isinstance(Reboot, bool)
+        if "GroupStart" in load[VB][group]:
             GroupStart = load[VB][group]["GroupStart"]
-            VirtualMachines = load[VB][group]["VirtualMachines"]
-            for vm in VirtualMachines:
-                # Convert this to multi Procesing for the GroupStart
-                print(GroupStart)
-                # Make this the VM Start funtion
-                print(vm)
-                # Nested For loop for the status
-                print(vm)
-                if isinstance(StartDelay, int):
-                    time.sleep(StartDelay)
+        else:
+            GroupStart = int(1)
+        print(GroupStart)
+        assert isinstance(GroupStart, int)
+        if "StartDelay" in load[VB][group]:
+            StartDelay = int(load[VB][group]["StartDelay"])
+        else:
+            StartDelay = 0
+        assert isinstance(StartDelay, int)
+    # Assert Virtual Machines are Setup and if not crash program
+        assert "VirtualMachines" in load[VB][group]
+        VirtualMachines = list(load[VB][group]["VirtualMachines"])
+        assert isinstance(VirtualMachines, list)
+    # Run the concurrent routine for the virtual machine checking and starting
+        tasks = [
+            start_vm_async(sem=asyncio.Semaphore(GroupStart), group=group, vm=vm, delay=StartDelay, unlock=unlock)
+            for vm in VirtualMachines
+        ]
+        await asyncio.gather(*tasks)
+
+
+async def start_vm_async(sem, group, vm, delay, unlock):
+    async with sem:
+        vm = str(vm)  # Convert to String
+        print(f"Checking VM Status: {vm}")
+        status = pve_vmstatus(
+            Endpoint=PVE_Endpoint,
+            Port=PVE_Port,
+            Node=PVE_Node,
+            vmid=vm,
+            token=PVE_Token,
+        )
+        reboot = "true"
+        if status == "stopped":
+            await asyncio.sleep(delay)
+            print(f"Finished VM: {vm}")
+        if status == "running" and unlock == "already" and reboot == "true":
+            print(f"Finished VM: {vm} with unlock and reboot")
 
 
 if __name__ == "__main__":

@@ -109,7 +109,7 @@ async def unlock_dataset(
                     f"Polling Job ID: {job_id}, DatatSet: {dataset}, Status: Storage already unlocked"
                 )
                 await ws.close()
-                return "Success"
+                return "already"
             # Fail due to error not a error on the machine
             else:
                 print("Fatel Error")
@@ -121,4 +121,4 @@ async def unlock_dataset(
                 f"Polling Job ID: {job_id}, DatatSet: {dataset}, Status Storage unlocked"
             )
             await ws.close()
-            return "Success"
+            return "unlocked"
