@@ -30,12 +30,15 @@ def pve_vmstatus(Endpoint, Port, Node, vmid, token):
     if r.status_code != 200:
         print("Error, with the API got Status Code:", r.status_code)
         print(r.reason)
-        exit()
+        return "error"
     elif r.status_code == 200:
         json_data = json.loads(r.text)
         status = json_data["data"]["status"]
+        agent = json_data["data"]["agent"]
+        print(agent)
         print(status)
+
         return status
     else:
         print("Fatel Error")
-        exit()
+        return "error"

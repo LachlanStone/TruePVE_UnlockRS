@@ -7,6 +7,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 def pve_vmpost(Endpoint, Port, Node, vmid, api_command, token):
     # DEF Variables
     # Match the API Command to the API Component, that we will call
+    assert api_command == "start" or api_command == "stop"
     match api_command:
         case "start":
             api_command_url = "/status/start"
@@ -31,10 +32,10 @@ def pve_vmpost(Endpoint, Port, Node, vmid, api_command, token):
     if r.status_code != 200:
         print("Error, with the API got Status Code:", r.status_code)
         print(r.reason)
-        exit()
+        return "error"
     elif r.status_code == 200:
         print("Success")
         return api_command
     else:
         print("Fatel Error")
-        exit()
+        return "error"

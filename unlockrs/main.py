@@ -13,6 +13,7 @@ from unlockrs.pve.start import *
 from unlockrs.pve.status import *
 from unlockrs.TrueNas.unlock import *
 
+
 # Global Variables
 
 
@@ -29,8 +30,8 @@ from unlockrs.TrueNas.unlock import *
 
 async def main():
     await SetupConfig()
-    await SystemCheck()
-    await TrueNas_Boot()
+    # await SystemCheck()
+    # await TrueNas_Boot()
     unlock = await TrueNas_Unlock()
     await VMBoot(unlock)
     exit()
@@ -59,12 +60,12 @@ async def SetupConfig():
 
 
 async def SystemCheck():
-    tstatus = await port_check(endpoint=PVE_Endpoint, port=PVE_Port)
-    assert tstatus == "online"
+    status = await port_check(endpoint=PVE_Endpoint, port=PVE_Port)
+    assert status == "online"
 
 
 async def TrueNas_Boot():
-    tstatus = pve_vmstatus(
+    status = pve_vmstatus(
         Endpoint=PVE_Endpoint,
         Port=PVE_Port,
         Node=PVE_Node,
@@ -72,11 +73,11 @@ async def TrueNas_Boot():
         token=PVE_Token,
     )
     # Debugging Component to Force, if bellow
-    assert tstatus == "running" or tstatus == "stopped"
-    if tstatus == "running":
+    assert status == "running" or status == "stopped"
+    if status == "running":
         print("TrueNas Virtual Machine is already Running")
         return ()
-    elif tstatus == "stopped":
+    elif status == "stopped":
         print("Virtaul Machine is Stopped")
         check = pve_vmpost(
             Endpoint=PVE_Endpoint,
@@ -85,24 +86,21 @@ async def TrueNas_Boot():
             vmid=TrueNas_VMID,
             api_command="start",
             token=PVE_Token,
-        )  
+        )
     assert check == "start"
-    if tstatus == "running" and check == "start":
-        print("TrueNas Virtual Machine has Booted")
-        return ()
-    elif tstatus == "stopped" and check == "start":
+    if status == "stopped" and check == "start":
         for i in range(5):
-            tstatus = pve_vmstatus(
+            status = pve_vmstatus(
                 Endpoint=PVE_Endpoint,
                 Port=PVE_Port,
                 Node=PVE_Node,
                 vmid=TrueNas_VMID,
                 token=PVE_Token,
             )
-            if tstatus == "running":
+            if status == "running":
                 print("TrueNas Virtual Machine has Booted")
                 print(f"after {i} amount of checks")
-                return()
+                return ()
             else:
                 print("System Failed to Boot")
                 print("CHECK PVE SERVER")
@@ -169,9 +167,17 @@ async def start_vm_async(sem, group, vm, delay, unlock):
             vmid=vm,
             token=PVE_Token,
         )
+        assert status == "running" or "stopped"
+        # First System Check if allready running or start virtual machine
         reboot = "true"
-        if status == "stopped":
-            pve_vmpost(
+        if status == "running" and unlock == "already" and reboot == "false":
+            print(f"Virtual Machine: {vm} is already running")
+            return ()
+        elif status == "running" and unlock == "already" and reboot == "true":
+            print(f"Virtual Machine: {vm} is already running")
+            return ()
+        elif status == "stopped":
+            check = pve_vmpost(
                 Endpoint=PVE_Endpoint,
                 Port=PVE_Port,
                 Node=PVE_Node,
@@ -181,9 +187,27 @@ async def start_vm_async(sem, group, vm, delay, unlock):
             )
             await asyncio.sleep(delay)
             print(f"Finished VM: {vm}")
-        elif status == "running" and unlock == "already" and reboot == "true":
-            print(f"Finished VM: {vm} with unlock and")
-        
-        
+        assert check == "start" or "rebooted"
+
+        # Check the status of the booting virtual machine
+        if status == "stopped" and check == "start":
+            for i in range(5):
+                status = pve_vmstatus(
+                    Endpoint=PVE_Endpoint,
+                    Port=PVE_Port,
+                    Node=PVE_Node,
+                    vmid=vm,
+                    token=PVE_Token,
+                )
+                if status == "running":
+                    print(f"Virtual Machine: {vm} is already running")
+                    print(f"after {i} amount of checks")
+                    return()
+                else:
+                    print(f"Virtual Machine: {vm} has failed to boot")
+                    print("CHECK PVE SERVER")
+                    return()
+
+
 if __name__ == "__main__":
     asyncio.run(main())
