@@ -1,6 +1,7 @@
 from time import sleep
 import websockets
 import json
+import ssl
 
 nd = "NotDefined"
 token = "NotDefined"  # This is temp until i define it in code under the def later
@@ -9,11 +10,16 @@ token = "NotDefined"  # This is temp until i define it in code under the def lat
 async def unlock_dataset(
     endpoint, dataset, passphrase, force=False, username=nd, password=nd
 ):
+    uri = f"wss://{endpoint}/websocket"
     # Define what variables need to be configured for the appliaction to funtion
     # TODO: Implement actual websocket connection and authentication
-    print(f"Attempting to connect to TrueNAS at ws://{endpoint}/websocket")
+    print(f"Attempting to connect to TrueNAS at {uri}")
     # WebSocket Comunication Component that is being used
-    async with websockets.connect(f"ws://{endpoint}/websocket") as ws:
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    context.check_hostname = False
+    context.verify_mode = ssl.CERT_NONE
+
+    async with websockets.connect(uri=uri, ssl=context) as ws:
         # Connect to the WebSocket
         await ws.send(json.dumps({"msg": "connect", "version": "1", "support": ["1"]}))
         await ws.recv()

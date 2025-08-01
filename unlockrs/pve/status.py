@@ -35,10 +35,8 @@ def pve_vmstatus(Endpoint, Port, Node, vmid, token):
         json_data = json.loads(r.text)
         status = json_data["data"]["status"]
         agent = json_data["data"]["agent"]
-        print(agent)
-        print(status)
-
-        return status
+        vmname = json_data["data"]["name"]
+        return status, agent, vmname
     else:
         print("Fatel Error")
         return "error"

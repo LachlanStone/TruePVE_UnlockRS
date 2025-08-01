@@ -1,6 +1,5 @@
 import yaml
 import os
-from unlockrs.yaml_conf import *
 
 async def load_yaml_file(dir_path="nd"):
     dir_path = "/home/tetio/DevOps/TruePVE_UnlockRS/unlockrs/"
