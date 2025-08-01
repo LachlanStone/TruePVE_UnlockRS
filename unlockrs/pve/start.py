@@ -1,18 +1,24 @@
 import requests
 import urllib3
-
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
-def pve_vmpost(Endpoint, Port, Node, vmid, api_command, token):
+def pve_vmpost(Endpoint, Port, Node, vmid, api_command="nd", token):
     # DEF Variables
     # Match the API Command to the API Component, that we will call
-    assert api_command == "start" or api_command == "stop"
+    assert api_command != "nd"
     match api_command:
         case "start":
             api_command_url = "/status/start"
         case "stop":
             api_command_url = "/status/stop"
+        case "restart":
+            api_command_url = "/status/restart"
+        case "shutdown":
+            api_command_url = "/status/shutdown"
+        case _:
+            Print("Error")
+            return("Error")
     # Set the URL Paramater for API Command being sent
     url = (
         "https://"
@@ -34,7 +40,6 @@ def pve_vmpost(Endpoint, Port, Node, vmid, api_command, token):
         print(r.reason)
         return "error"
     elif r.status_code == 200:
-        print("Success")
         return api_command
     else:
         print("Fatel Error")
