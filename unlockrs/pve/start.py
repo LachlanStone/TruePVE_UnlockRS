@@ -17,7 +17,7 @@ def pve_vmpost(Endpoint, Port, Node, vmid, api_command="nd", token):
         case "shutdown":
             api_command_url = "/status/shutdown"
         case _:
-            Print("Error")
+            print("Error")
             return("Error")
     # Set the URL Paramater for API Command being sent
     url = (
