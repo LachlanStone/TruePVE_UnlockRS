@@ -215,7 +215,7 @@ async def start_vm_async(sem, endpoint, port, node, token, group, vm, delay, unl
                     print("Fatel Error")
                     exit()
                 else:
-                    await asyncio.sleep(1)
+                    await asyncio.sleep(i)
 
 
 if __name__ == "__main__":
