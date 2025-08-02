@@ -193,7 +193,7 @@ async def start_vm_async(sem, endpoint, port, node, token, group, vm, delay, unl
         assert check == "start" or "rebooted"
         # Check the status of the booting virtual machine
         if status == "stopped" and check == "start":
-            for i in range(1, 6):
+            for i in range(1, 10):
                 status, agent, name = pve_vmstatus(
                     Endpoint=endpoint,
                     Port=port,
