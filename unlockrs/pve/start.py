@@ -3,10 +3,10 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
-def pve_vmpost(Endpoint, Port, Node, vmid, api_command="nd", token):
-    # DEF Variables
+def pve_vmpost(Endpoint, Port, Node, vmid, api_command="nd", token="nd"):
     # Match the API Command to the API Component, that we will call
     assert api_command != "nd"
+    assert token != "nd"
     match api_command:
         case "start":
             api_command_url = "/status/start"

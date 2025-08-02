@@ -1,4 +1,3 @@
-from ctypes import ArgumentError
 import sys
 import os
 import asyncio
@@ -13,21 +12,6 @@ from unlockrs.systemcheck import *
 from unlockrs.pve.start import *
 from unlockrs.pve.status import *
 from unlockrs.TrueNas.unlock import *
-
-
-# Global Variables
-
-
-# TODO: Encryption / Read USB Key
-# The usb key will store the file that contains the encryption key
-
-# TODO: Config File
-# Need to define the variables
-
-# TODO: Virtual Machine Booting
-# Impliment Array to store all the Settings and Virtual Machines booted after
-# Impliment Looping Startup of Virtual Machines with checking of VM State
-
 
 async def main():
     await SetupConfig()
@@ -64,9 +48,11 @@ async def SetupConfig():
 async def SystemCheck():
     status = await port_check(endpoint=PVE_Endpoint, port=PVE_Port)
     assert status == "online" or "offline"
-    if status =="offline":
+    if status == "offline":
         exit()
-    
+
+
+
 async def TrueNas_Boot():
     vm = TrueNas_VMID
     status, agent, name = pve_vmstatus(
@@ -93,7 +79,7 @@ async def TrueNas_Boot():
         )
     assert check == "start"
     if status == "stopped" and check == "start":
-        for i in range(1,6):
+        for i in range(1, 6):
             status, agent, name = pve_vmstatus(
                 Endpoint=PVE_Endpoint,
                 Port=PVE_Port,
@@ -104,17 +90,18 @@ async def TrueNas_Boot():
             if status == "running":
                 print(f"Virtual Machine: {name} ID: {vm} is already running")
                 print(f"after {i} amount of checks")
-                return()
-            elif status == "stopped" and i == 4:                  
+                return ()
+            elif status == "stopped" and i == 4:
                 print(f"Virtual Machine: {name} ID: {vm} has failed to boot")
                 print("CHECK PVE SERVER")
-                return()
+                return ()
             elif i == 4:
                 print("Fatel Error")
-                exit()    
+                exit()
+
 
 async def TrueNas_Unlock():
-    status = await port_check(endpoint = TrueNas_Endpoint, port = TrueNas_Port)
+    status = await port_check(endpoint=TrueNas_Endpoint, port=TrueNas_Port)
     assert status == "online" or "offline"
     if status == "offline":
         exit()
@@ -128,7 +115,7 @@ async def TrueNas_Unlock():
     return unlock
 
 
-async def VMBoot(unlock):  # STATUS: TODO
+async def VMBoot(unlock):
     VB = "VMBootLoop"
     for group in load[VB]:
         # Check if Variables exists and if they do not set the default value
@@ -156,10 +143,10 @@ async def VMBoot(unlock):  # STATUS: TODO
         tasks = [
             start_vm_async(
                 sem,
-                endpoint = PVE_Endpoint,
-                port = PVE_Port,
-                node = PVE_Node,
-                token = PVE_Token,
+                endpoint=PVE_Endpoint,
+                port=PVE_Port,
+                node=PVE_Node,
+                token=PVE_Token,
                 group=group,
                 vm=vm,
                 delay=StartDelay,
@@ -202,10 +189,10 @@ async def start_vm_async(sem, endpoint, port, node, token, group, vm, delay, unl
             )
             print(f"Starting VM: {vm}")
         assert check == "start" or "rebooted"
-        print (status)
+        print(status)
         # Check the status of the booting virtual machine
         if status == "stopped" and check == "start":
-            for i in range(1,6):
+            for i in range(1, 6):
                 status, agent, name = pve_vmstatus(
                     Endpoint=endpoint,
                     Port=port,
@@ -216,16 +203,19 @@ async def start_vm_async(sem, endpoint, port, node, token, group, vm, delay, unl
                 if status == "running":
                     print(f"Virtual Machine: {name} ID: {vm} has Started")
                     print(f"after {i} checks")
-                    await asyncio.sleep(delay) #Delay Between each virtual machine start
-                elif status == "stopped" and i == 4:                  
+                    await asyncio.sleep(
+                        delay
+                    )  # Delay Between each virtual machine start
+                elif status == "stopped" and i == 4:
                     print(f"Virtual Machine: {name} ID: {vm} has failed to boot")
                     print("CHECK PVE SERVER")
-                    return()
+                    return ()
                 elif i == 4:
                     print("Fatel Error")
-                    exit()         
+                    exit()
                 else:
-                    await asyncio.sleep(1)           
+                    await asyncio.sleep(1)
+
 
 if __name__ == "__main__":
     asyncio.run(main())
