@@ -1,8 +1,12 @@
-# TruePVE UnlockRS
+<div align="center">
+  <img src="./proxmox.svg" width="90" height="90">
+  <h1 style="font-size: 3em; margin-bottom: 0;">UnlockRS</h1>
+  <p style="font-size: 1.2em;">A powerful, self-hosted automation tool for Proxmox VE and TrueNAS.</p>
+</div>
 
-TruePVE UnlockRS is a Python-based automation tool designed to streamline the process of managing virtual machines (VMs) on Proxmox VE (PVE) that depend on an encrypted ZFS dataset hosted on a TrueNAS instance. The tool automatically starts the TrueNAS VM, unlocks the specified dataset, and then boots up dependent VMs in a predefined order.
+**TruePVE UnlockRS** is a Python-based automation tool designed to streamline the process of managing virtual machines (VMs) on Proxmox VE (PVE) that depend on an encrypted ZFS dataset hosted on a TrueNAS instance. The tool automatically starts the TrueNAS VM, unlocks the specified dataset, and then boots up dependent VMs in a predefined order.
 
-## Features
+## ✨ Features
 
 -   **Automated Startup Sequence:** Automatically starts the TrueNAS VM on the PVE server.
 -   **ZFS Dataset Unlocking:** Connects to the TrueNAS instance to unlock an encrypted ZFS dataset.
@@ -10,20 +14,32 @@ TruePVE UnlockRS is a Python-based automation tool designed to streamline the pr
 -   **Configuration-Driven:** All settings, including credentials and VM groups, are managed through a central `Config.yml` file.
 -   **System Checks:** Verifies the availability of PVE and TrueNAS services before proceeding.
 -   **Concurrent VM Startup:** Supports starting multiple VMs concurrently within a boot group to speed up the process.
+-   **Lightweight & Simple:** Built with Python, making it easy to set up and run.
 
-## Requirements
+## 🚀 Installation
 
--   Python 3.x
--   The Python packages listed in `requirements.txt`. Install them using pip:
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/your-username/TruePVE_UnlockRS.git
+    cd TruePVE_UnlockRS
+    ```
+
+2.  **Install the required dependencies:**
     ```bash
     pip install -r requirements.txt
     ```
 
-## Configuration
+## ⚙️ Configuration
+
+The application is configured using the `Config.yml` file. You can create your own `Config.yml` by copying the `example.config.yaml` file.
+
+```bash
+cp unlockrs/example.config.yaml Config.yml
+```
 
 For detailed configuration instructions, please see the [CONFIG.md](CONFIG.md) file.
 
-## Usage
+## ▶️ Usage
 
 1.  **Complete the Configuration**: Fill out the `Config.yml` file with your specific PVE and TrueNAS details.
 2.  **Run the Application**: Execute the `main.py` script to start the automation process.
@@ -39,7 +55,7 @@ The script will then perform the following actions:
 4.  Unlock the specified TrueNAS dataset.
 5.  Start the VMs in the defined boot groups.
 
-## Project Structure
+## 📂 Project Structure
 
 -   `unlockrs/main.py`: The main entry point of the application.
 -   `unlockrs/TrueNas/unlock.py`: Handles the connection to TrueNAS and the dataset unlocking process.
@@ -48,3 +64,5 @@ The script will then perform the following actions:
 -   `unlockrs/yaml_conf.py`: Manages loading and parsing the `Config.yml` file.
 -   `Config.yml`: The central configuration file for all application settings.
 -   `requirements.txt`: A list of Python dependencies for the project.
+
+## 📄 License
