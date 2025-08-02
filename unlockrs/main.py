@@ -112,6 +112,8 @@ async def TrueNas_Unlock():
         dataset=TrueNas_dataset,
         passphrase=TrueNas_passphrase,
     )
+    if unlock == "error":
+        exit()
     return unlock
 
 
@@ -189,7 +191,6 @@ async def start_vm_async(sem, endpoint, port, node, token, group, vm, delay, unl
             )
             print(f"Starting VM: {vm}")
         assert check == "start" or "rebooted"
-        print(status)
         # Check the status of the booting virtual machine
         if status == "stopped" and check == "start":
             for i in range(1, 6):
