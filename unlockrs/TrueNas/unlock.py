@@ -85,6 +85,7 @@ async def unlock_dataset(
             )
             await ws.send(args)
             response = json.loads(await ws.recv())
+            # print(response)
             # Safely access job details to avoid errors if the job succeeds
             # Extract the Response Infomation from the result
             job = response.get("result", [{}])[0]
@@ -106,8 +107,23 @@ async def unlock_dataset(
 
         # Check the Status of the Dataset
         # Fail Forward as the response, can be the data is allready unlocked
-        if job_state == "FAILED" and job.get("exc_info"):
-            # The error message is at index 1 of the first list inside 'extra'
+        job_event = None
+        try:
+            if job.get("result") and job["result"].get("failed"):
+                if dataset in job["result"]["failed"]:
+                    job_event = job["result"]["failed"][dataset].get("error")
+        except AttributeError:
+            pass # Handle cases where 'failed' or 'result' might be None
+        if job_event == "Invalid Key":
+            print("Invalid PassPhase Key Provided")
+            return ("error")
+        elif job_state == "FAILED" and job.get("exc_info"):           
+            # Check if 'exc_info' and 'extra' exist before accessing
+            if not job.get("exc_info") or not job["exc_info"].get("extra"):
+                print("Fatel Error: Missing 'exc_info' or 'extra' in job details.")
+                print (job.get("exc_info"))
+                await ws.close()
+                exit()
             error_message = job["exc_info"]["extra"][0][1]
             # Fail Forward - As the DataSet is allready unlocked
             if error_message == f"{dataset} dataset is not locked":
@@ -120,7 +136,7 @@ async def unlock_dataset(
             else:
                 print("Fatel Error")
                 await ws.close()
-                exit()
+                return("error")
         # DataSet was unlocked and is healthy
         elif job_state == "RUNNING" or job_state == "SUCCESS":
             print(
