@@ -2,7 +2,6 @@ import yaml
 import os
 
 async def load_yaml_file(dir_path="nd"):
-    dir_path = "/home/tetio/DevOps/TruePVE_UnlockRS/unlockrs/"
     config_file = "config.yml"
     allitems = os.listdir(dir_path)
     if config_file in allitems:

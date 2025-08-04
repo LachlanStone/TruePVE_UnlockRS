@@ -221,5 +221,4 @@ async def start_vm_async(sem, endpoint, port, node, token, group, vm, delay, unl
 
 
 if __name__ == "__main__":
-    global dirpath
     asyncio.run(main())
