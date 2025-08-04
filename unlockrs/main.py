@@ -8,6 +8,7 @@ _PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if _PROJECT_ROOT not in sys.path:
     sys.path.insert(0, _PROJECT_ROOT)
 from unlockrs.yaml_conf import *
+from unlockrs.checks.is_docker import *
 from unlockrs.systemcheck import *
 from unlockrs.pve.start import *
 from unlockrs.pve.status import *
@@ -23,8 +24,8 @@ async def main():
 
 
 async def SetupConfig():
-    # Set the default location for the project root files
-    dir_path = _PROJECT_ROOT
+# Confirm if running in contianer or as application is standalone
+    dir_path = is_docker(PROJECT_ROOT=_PROJECT_ROOT)
     # Import the TrueNas Global Variables
     global load
     global PVE_Endpoint, PVE_Port, PVE_Node, PVE_Token
@@ -50,7 +51,6 @@ async def SystemCheck():
     assert status == "online" or "offline"
     if status == "offline":
         exit()
-
 
 
 async def TrueNas_Boot():
@@ -218,5 +218,8 @@ async def start_vm_async(sem, endpoint, port, node, token, group, vm, delay, unl
                     await asyncio.sleep(i)
 
 
+
+
 if __name__ == "__main__":
+    global dirpath
     asyncio.run(main())
