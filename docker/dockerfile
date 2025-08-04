@@ -21,6 +21,9 @@ WORKDIR /home/unlock
 
 # Copy over APPS
 COPY --chown=unlock:unlock --from=unlockrs unlockrs /unlockrs
+# Setup the Config Directory for Config.yml files 
+RUN mkdir /config
+RUN chown -R unlock:unlock /config
 
 # Install Python dependencies and identify runtime dependencies
 # using scanelf to detect shared library dependencies
