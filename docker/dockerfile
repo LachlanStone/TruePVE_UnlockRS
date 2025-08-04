@@ -1,0 +1,43 @@
+# Use Python with Alpine as the base image
+FROM python:3.10.16-alpine3.20
+
+# Disable Rust compilation for cryptography package
+ENV CRYPTOGRAPHY_DONT_BUILD_RUST 1
+
+# Install required system packages:
+# - VIM for editing code during system for editing
+RUN apk add --no-cache vim \
+# Install build dependencies needed for Python packages compilation
+&& apk add --no-cache --virtual .build-deps \
+    make \
+    gcc \
+    libc-dev \
+    openssl-dev \
+    libffi-dev
+
+# Create a non-root user
+RUN addgroup -S unlock && adduser -S unlock -G unlock
+WORKDIR /home/unlock
+
+# Copy over APPS
+COPY --chown=unlock:unlock --from=unlockrs unlockrs /unlockrs
+
+# Install Python dependencies and identify runtime dependencies
+# using scanelf to detect shared library dependencies
+RUN pip install -r /unlockrs/requirements.txt \
+&& runDeps="$(\ \
+    scanelf --needed --nobanner --recursive /usr/local \
+    | awk '{ gsub(/,/, "\nso:", $2); print "so:" $2 }' \
+    | sort -u \
+    | xargs -r apk info --installed \
+    | sort -u \
+)"
+
+# Switch to the python user
+USER python
+
+# Set the working directory
+WORKDIR /home/unlockrs/unlockrs
+
+# Set the entrypoint
+ENTRYPOINT ["python3", "-m", "main.py"]
