@@ -55,7 +55,7 @@ async def SystemCheck():
 
 async def TrueNas_Boot():
     vm = TrueNas_VMID
-    status, agent, name = pve_vmstatus(
+    status, agent, name, type = pve_typecheck(
         Endpoint=PVE_Endpoint,
         Port=PVE_Port,
         Node=PVE_Node,
@@ -80,7 +80,7 @@ async def TrueNas_Boot():
     assert check == "start"
     if status == "stopped" and check == "start":
         for i in range(1, 6):
-            status, agent, name = pve_vmstatus(
+            status, agent, name, type = pve_typecheck(
                 Endpoint=PVE_Endpoint,
                 Port=PVE_Port,
                 Node=PVE_Node,
@@ -163,7 +163,7 @@ async def VMBoot(unlock):
 async def start_vm_async(sem, endpoint, port, node, token, group, vm, delay, unlock):
     async with sem:
         vm = str(vm)  # Convert to String
-        status, agent, name = pve_vmstatus(
+        status, agent, name, type = pve_typecheck(
             Endpoint=endpoint,
             Port=port,
             Node=node,
@@ -173,12 +173,15 @@ async def start_vm_async(sem, endpoint, port, node, token, group, vm, delay, unl
         assert status == "running" or "stopped"
         # First System Check if allready running or start virtual machine
         reboot = "true"
-        # status = "stopped"
+        if type == "qemu":
+            ptype = "Virtual Machine"
+        elif type == "lxc":
+            ptype = "Linux Containers"
         if status == "running" and unlock == "already" and reboot == "false":
-            print(f"Virtual Machine: {name} ID: {vm} is already running")
+            print(f"{ptype}: {name} ID: {vm} is already running")
             return ()
         elif status == "running" and unlock == "already" and reboot == "true":
-            print(f"Virtual Machine: {name} ID: {vm} is already running")
+            print(f"{ptype} {name} ID: {vm} is already running")
             return ()
         elif status == "stopped":
             check = pve_vmpost(
@@ -188,13 +191,14 @@ async def start_vm_async(sem, endpoint, port, node, token, group, vm, delay, unl
                 vmid=vm,
                 api_command="start",
                 token=token,
+                type=type,
             )
-            print(f"Starting VM: {vm}")
+            print(f"Starting {ptype}: {vm}")
         assert check == "start" or "rebooted"
         # Check the status of the booting virtual machine
         if status == "stopped" and check == "start":
             for i in range(1, 10):
-                status, agent, name = pve_vmstatus(
+                status, agent, name, type = pve_typecheck(
                     Endpoint=endpoint,
                     Port=port,
                     Node=node,
@@ -202,13 +206,14 @@ async def start_vm_async(sem, endpoint, port, node, token, group, vm, delay, unl
                     token=token,
                 )
                 if status == "running":
-                    print(f"Virtual Machine: {name} ID: {vm} has Started")
+                    print(f"{ptype}: {name} ID: {vm} has Started")
                     print(f"after {i} checks")
                     await asyncio.sleep(
                         delay
                     )  # Delay Between each virtual machine start
+                    break
                 elif status == "stopped" and i == 4:
-                    print(f"Virtual Machine: {name} ID: {vm} has failed to boot")
+                    print(f"{ptype}: {name} ID: {vm} has failed to boot")
                     print("CHECK PVE SERVER")
                     return ()
                 elif i == 4:
