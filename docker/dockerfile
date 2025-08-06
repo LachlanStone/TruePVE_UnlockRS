@@ -1,5 +1,5 @@
 # Use Python with Alpine as the base image
-FROM python:3.10.16-alpine3.20
+FROM python:3.13.3-alpine3.20
 
 # Disable Rust compilation for cryptography package
 ENV CRYPTOGRAPHY_DONT_BUILD_RUST 1
