@@ -6,8 +6,6 @@ __pycache__
 
 # Removing testing secrets for development
 unlockrs/tokens.py
-.envrc
 config.yml
-
 # Removing Old Code that is not used
 old

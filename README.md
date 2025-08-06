@@ -4,7 +4,7 @@
   <p style="font-size: 1.2em;">A powerful, self-hosted automation tool for Proxmox VE and TrueNAS.</p>
 </div>
 
-**TruePVE UnlockRS** is a Python-based automation tool designed to streamline the process of managing virtual machines (VMs) on Proxmox VE (PVE) that depend on an encrypted ZFS dataset hosted on a TrueNAS instance. The tool automatically starts the TrueNAS VM, unlocks the specified dataset, and then boots up dependent VMs in a predefined order.
+**TruePVE UnlockRS** is a Python-based automation tool designed to streamline the process of managing virtual machines (VMs) and Linux Containers (LXCs) on Proxmox VE (PVE) that depend on an encrypted ZFS dataset hosted on a TrueNAS instance. The tool automatically starts the TrueNAS VM, unlocks the specified dataset, and then boots up dependent VMs in a predefined order.
 
 ## ✨ Features
 
@@ -13,6 +13,7 @@
 -   **Sequential VM Boot-Up:** Starts specified groups of VMs in a configurable order after the dataset is unlocked.
 -   **Configuration-Driven:** All settings, including credentials and VM groups, are managed through a central `Config.yml` file.
 -   **System Checks:** Verifies the availability of PVE and TrueNAS services before proceeding.
+-   **Auto-detection of QEMU VMs and LXC Containers:** Automatically identifies and manages both virtual machines and Linux containers.
 -   **Concurrent VM Startup:** Supports starting multiple VMs concurrently within a boot group to speed up the process.
 -   **Lightweight & Simple:** Built with Python, making it easy to set up and run.
 
