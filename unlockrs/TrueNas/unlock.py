@@ -12,7 +12,6 @@ async def unlock_dataset(
 ):
     uri = f"wss://{endpoint}/websocket"
     # Define what variables need to be configured for the appliaction to funtion
-    # TODO: Implement actual websocket connection and authentication
     print(f"Attempting to connect to TrueNAS at {uri}")
     # WebSocket Comunication Component that is being used
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
@@ -22,6 +21,7 @@ async def unlock_dataset(
     async with websockets.connect(uri=uri, ssl=context) as ws:
         # Connect to the WebSocket
         await ws.send(json.dumps({"msg": "connect", "version": "1", "support": ["1"]}))
+# Confirming the websocket answer to wait longer here
         await ws.recv()
 
         # Confirm method for authentication with the websocket API
@@ -71,10 +71,9 @@ async def unlock_dataset(
         )
         await ws.send(args)
         id = json.loads(await ws.recv())["result"]
-        # TODO Get the state from above as result with ID then call the jobs queue on truenas and get the state of the job after save 10 second
         # Get the state of the dataset after we unlock it
         ## If the unlock is still running then check again every i + time
-        for i in range(10):
+        for i in range(1,20):
             args = json.dumps(
                 {
                     "msg": "method",
@@ -93,11 +92,10 @@ async def unlock_dataset(
             job_state = job.get("state")
             # Check if the Unlock is still running
             if job_state == "RUNNING" or job_state == "nd":
-                sleepy = i + 1
-                sleep(sleepy)
+                sleep(i)
             elif job_state == "SUCCESS" or job_state == "FAILED":
                 break
-            elif i == 9:
+            elif i == 19:
                 print("Fatel Error")
                 await(ws.close)
             else:

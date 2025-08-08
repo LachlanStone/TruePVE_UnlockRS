@@ -1,7 +1,7 @@
 import time
 import asyncio
 
-async def port_check(endpoint="none", port="none", duration=15, delay=2):
+async def port_check(endpoint="none", port="none", duration=120, delay=2):
     assert endpoint != "none"
     assert port != "none"
     print(f"Checking system {endpoint}:{port}")

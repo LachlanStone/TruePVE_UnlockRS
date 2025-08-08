@@ -18,7 +18,9 @@ async def main():
     await SetupConfig()
     await SystemCheck()
     await TrueNas_Boot()
+    await asyncio.sleep(10)
     unlock = await TrueNas_Unlock()
+    await asyncio.sleep(10)
     await VMBoot(unlock)
     exit()
 
@@ -94,7 +96,7 @@ async def TrueNas_Boot():
             elif status == "stopped" and i == 4:
                 print(f"Virtual Machine: {name} ID: {vm} has failed to boot")
                 print("CHECK PVE SERVER")
-                return ()
+                exit()
             elif i == 4:
                 print("Fatel Error")
                 exit()
